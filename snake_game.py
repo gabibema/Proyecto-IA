@@ -2,8 +2,14 @@
 import pygame
 import time
 import random
+from enum import Enum
+import numpy as np
+from collections import namedtuple
+pygame.init()
+font = pygame.font.Font(None,25) 
  
 snake_speed = 15
+BLOCK_SIZE = 10
  
 # Window size
 window_x = 720
@@ -15,165 +21,128 @@ white = pygame.Color(255, 255, 255)
 red = pygame.Color(255, 0, 0)
 green = pygame.Color(0, 255, 0)
 blue = pygame.Color(0, 0, 255)
- 
+
+class Direction(Enum):
+    RIGHT = 1
+    LEFT = 2
+    UP = 3
+    DOWN = 4
+    
+SPEED = 40
+Point = namedtuple('Point','x , y')
+
 # Initialising pygame
 pygame.init()
  
 # Initialise game window
-pygame.display.set_caption('Snake Game')
-game_window = pygame.display.set_mode((window_x, window_y))
- 
-# FPS (frames per second) controller
-fps = pygame.time.Clock()
- 
-# defining snake default position
-snake_position = [100, 50]
- 
-# defining first 4 blocks of snake body
-snake_body = [[100, 50],
-              [90, 50],
-              [80, 50],
-              [70, 50]
-              ]
-# fruit position
-fruit_position = [random.randrange(1, (window_x//10)) * 10,
-                  random.randrange(1, (window_y//10)) * 10]
- 
-fruit_spawn = True
- 
-# setting default snake direction towards
-# right
-direction = 'RIGHT'
-change_to = direction
- 
-# initial score
-score = 0
- 
-# displaying Score function
-def show_score(choice, color, font, size):
-   
-    # creating font object score_font
-    score_font = pygame.font.SysFont(font, size)
-     
-    # create the display surface object
-    # score_surface
-    score_surface = score_font.render('Score : ' + str(score), True, color)
-     
-    # create a rectangular object for the text
-    # surface object
-    score_rect = score_surface.get_rect()
-     
-    # displaying text
-    game_window.blit(score_surface, score_rect)
- 
-# game over function
-def game_over():
-   
-    # creating font object my_font
-    my_font = pygame.font.SysFont('arial', 50)
-     
-    # creating a text surface on which text
-    # will be drawn
-    game_over_surface = my_font.render(
-        'Your Score is : ' + str(score), True, red)
-     
-    # create a rectangular object for the text
-    # surface object
-    game_over_rect = game_over_surface.get_rect()
-     
-    # setting position of the text
-    game_over_rect.midtop = (window_x/2, window_y/4)
-     
-    # blit will draw the text on screen
-    game_window.blit(game_over_surface, game_over_rect)
-    pygame.display.flip()
-     
-    # after 2 seconds we will quit the program
-    time.sleep(2)
-     
-    # deactivating pygame library
-    pygame.quit()
-     
-    # quit the program
-    quit()
- 
- 
-# Main Function
-while True:
-     
-    # handling key events
-    for event in pygame.event.get():
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP:
-                change_to = 'UP'
-            if event.key == pygame.K_DOWN:
-                change_to = 'DOWN'
-            if event.key == pygame.K_LEFT:
-                change_to = 'LEFT'
-            if event.key == pygame.K_RIGHT:
-                change_to = 'RIGHT'
- 
-    # If two keys pressed simultaneously
-    # we don't want snake to move into two
-    # directions simultaneously
-    if change_to == 'UP' and direction != 'DOWN':
-        direction = 'UP'
-    if change_to == 'DOWN' and direction != 'UP':
-        direction = 'DOWN'
-    if change_to == 'LEFT' and direction != 'RIGHT':
-        direction = 'LEFT'
-    if change_to == 'RIGHT' and direction != 'LEFT':
-        direction = 'RIGHT'
- 
-    # Moving the snake
-    if direction == 'UP':
-        snake_position[1] -= 10
-    if direction == 'DOWN':
-        snake_position[1] += 10
-    if direction == 'LEFT':
-        snake_position[0] -= 10
-    if direction == 'RIGHT':
-        snake_position[0] += 10
- 
-    # Snake body growing mechanism
-    # if fruits and snakes collide then scores
-    # will be incremented by 10
-    snake_body.insert(0, list(snake_position))
-    if snake_position[0] == fruit_position[0] and snake_position[1] == fruit_position[1]:
-        score += 10
-        fruit_spawn = False
-    else:
-        snake_body.pop()
-         
-    if not fruit_spawn:
-        fruit_position = [random.randrange(1, (window_x//10)) * 10,
-                          random.randrange(1, (window_y//10)) * 10]
-         
-    fruit_spawn = True
-    game_window.fill(black)
-     
-    for pos in snake_body:
-        pygame.draw.rect(game_window, green,
-                         pygame.Rect(pos[0], pos[1], 10, 10))
-    pygame.draw.rect(game_window, white, pygame.Rect(
-        fruit_position[0], fruit_position[1], 10, 10))
- 
-    # Game Over conditions
-    if snake_position[0] < 0 or snake_position[0] > window_x-10:
-        game_over()
-    if snake_position[1] < 0 or snake_position[1] > window_y-10:
-        game_over()
- 
-    # Touching the snake body
-    for block in snake_body[1:]:
-        if snake_position[0] == block[0] and snake_position[1] == block[1]:
-            game_over()
- 
-    # displaying score countinuously
-    show_score(1, white, 'arial', 20)
- 
-    # Refresh game screen
-    pygame.display.update()
- 
-    # Frame Per Second /Refresh Rate
-    fps.tick(snake_speed)
+
+class SnakeGame:
+    def __init__(self):
+        self.w = 720
+        self.h = 480
+        pygame.display.set_caption('Snake Game')
+        self.display  = pygame.display.set_mode((window_x, window_y))
+        self.clock = pygame.time.Clock()
+        
+        self.reset()
+
+    def __place__food(self):
+        self.food = Point(random.randrange(1, (window_x//10)) * BLOCK_SIZE,
+                          random.randrange(1, (window_y//10)) * BLOCK_SIZE)        
+        if(self.food in self.body):
+            self._place__food()      
+
+
+    def reset (self):
+        self.direction = Direction.RIGHT
+        self.head = Point(100,50)
+        self.body = [self.head, Point(90, 50),
+                     Point(80, 50)]
+        self.score = 0
+        self.food = None
+        self.__place__food()
+        self.game_over = False
+        self.frame_iteration = 0          
+
+    def play_step(self,action):
+        self.frame_iteration+=1
+
+        for event in pygame.event.get():
+            if(event.type == pygame.QUIT):
+                pygame.quit()
+                self.game_over = True
+                quit()
+
+        self._move(action)
+        self.body.insert(0,self.head)
+    
+
+        reward = 0  
+        self.game_over = False 
+
+        if(self.is_collision() or self.frame_iteration > 100*len(self.body) ):
+            self.game_over=True
+            reward = -10
+            return reward,self.game_over,self.score
+            
+        if(self.head == self.food):
+            self.score+=1
+            reward=10
+            self._place__food()
+
+        else:
+            self.body.pop()
+        
+        self._update_ui()
+        self.clock.tick(SPEED)
+        
+        return reward,self.game_over,self.score
+    
+    def _update_ui(self):
+        self.display.fill(black)
+        for pt in self.body:
+            pygame.draw.rect(self.display,green,pygame.Rect(pt.x,pt.y,BLOCK_SIZE,BLOCK_SIZE))
+        
+        pygame.draw.rect(self.display,red,pygame.Rect(self.food.x,self.food.y,BLOCK_SIZE,BLOCK_SIZE))
+        text = font.render("Score: "+str(self.score),True,white)
+        self.display.blit(text,[0,0])
+        pygame.display.flip()
+
+    def _move(self,action):
+        # Action
+        # [1,0,0] -> Straight
+        # [0,1,0] -> Right Turn 
+        # [0,0,1] -> Left Turn
+        clock_wise = [Direction.RIGHT,Direction.DOWN,Direction.LEFT,Direction.UP]
+        idx = clock_wise.index(self.direction)
+        if np.array_equal(action, [1, 0, 0]):
+            new_dir = clock_wise[idx]
+        elif np.array_equal(action, [0,1,0]):
+            next_idx = (idx + 1) % 4
+            new_dir = clock_wise[next_idx]
+        else:
+            next_idx = (idx - 1) % 4
+            new_dir = clock_wise[next_idx] # Left Turn
+        self.direction = new_dir
+        
+        x = self.head.x
+        y = self.head.y
+        if(self.direction == Direction.RIGHT):
+            x+=BLOCK_SIZE
+        elif(self.direction == Direction.LEFT):
+            x-=BLOCK_SIZE
+        elif(self.direction == Direction.DOWN):
+            y+=BLOCK_SIZE
+        elif(self.direction == Direction.UP):
+            y-=BLOCK_SIZE
+        self.head = Point(x,y)
+        
+    def is_collision(self, pt=None):
+        if(pt is None):
+            pt = self.head
+        #hit boundary
+        if(pt.x>self.w-BLOCK_SIZE or pt.x<0 or pt.y>self.h - BLOCK_SIZE or pt.y<0):
+            return True
+        if(pt in self.body[1:]):
+            return True
+        return False
