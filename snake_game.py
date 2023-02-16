@@ -28,7 +28,7 @@ class Direction(Enum):
     UP = 3
     DOWN = 4
     
-SPEED = 40
+SPEED = 15
 Point = namedtuple('Point','x , y')
 
 # Initialising pygame
@@ -46,7 +46,7 @@ class SnakeGame:
         
         self.reset()
 
-    def __place__food(self):
+    def __place_food(self):
         self.food = Point(random.randrange(1, (window_x//10)) * BLOCK_SIZE,
                           random.randrange(1, (window_y//10)) * BLOCK_SIZE)        
         if(self.food in self.body):
@@ -60,23 +60,33 @@ class SnakeGame:
                      Point(80, 50)]
         self.score = 0
         self.food = None
-        self.__place__food()
+        self.__place_food()
         self.game_over = False
         self.frame_iteration = 0          
 
-    def play_step(self,action):
-        self.frame_iteration+=1
-
+    def __get_move(self):
         for event in pygame.event.get():
             if(event.type == pygame.QUIT):
                 pygame.quit()
-                self.game_over = True
                 quit()
+            if(event.type == pygame.KEYDOWN):
+                if(event.key == pygame.K_LEFT):
+                    self.direction = Direction.LEFT
+                elif(event.key == pygame.K_RIGHT):
+                    self.direction = Direction.RIGHT
+                elif(event.key == pygame.K_UP):
+                    self.direction = Direction.UP
+                elif(event.key == pygame.K_DOWN):
+                    self.direction = Direction.DOWN
 
-        self._move(action)
+    def play_step(self,direction = None):
+        self.frame_iteration+=1
+
+        if(direction == None):
+            self.__get_move()
+        self._move(self.direction)
         self.body.insert(0,self.head)
     
-
         reward = 0  
         self.game_over = False 
 
@@ -88,17 +98,17 @@ class SnakeGame:
         if(self.head == self.food):
             self.score+=1
             reward=10
-            self._place__food()
+            self.__place_food()
 
         else:
             self.body.pop()
         
-        self._update_ui()
+        self.__update_ui()
         self.clock.tick(SPEED)
         
         return reward,self.game_over,self.score
     
-    def _update_ui(self):
+    def __update_ui(self):
         self.display.fill(black)
         for pt in self.body:
             pygame.draw.rect(self.display,green,pygame.Rect(pt.x,pt.y,BLOCK_SIZE,BLOCK_SIZE))
@@ -109,22 +119,6 @@ class SnakeGame:
         pygame.display.flip()
 
     def _move(self,action):
-        # Action
-        # [1,0,0] -> Straight
-        # [0,1,0] -> Right Turn 
-        # [0,0,1] -> Left Turn
-        clock_wise = [Direction.RIGHT,Direction.DOWN,Direction.LEFT,Direction.UP]
-        idx = clock_wise.index(self.direction)
-        if np.array_equal(action, [1, 0, 0]):
-            new_dir = clock_wise[idx]
-        elif np.array_equal(action, [0,1,0]):
-            next_idx = (idx + 1) % 4
-            new_dir = clock_wise[next_idx]
-        else:
-            next_idx = (idx - 1) % 4
-            new_dir = clock_wise[next_idx] # Left Turn
-        self.direction = new_dir
-        
         x = self.head.x
         y = self.head.y
         if(self.direction == Direction.RIGHT):
@@ -140,7 +134,7 @@ class SnakeGame:
     def is_collision(self, pt=None):
         if(pt is None):
             pt = self.head
-        #hit boundary
+            
         if(pt.x>self.w-BLOCK_SIZE or pt.x<0 or pt.y>self.h - BLOCK_SIZE or pt.y<0):
             return True
         if(pt in self.body[1:]):
