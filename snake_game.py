@@ -43,15 +43,13 @@ class SnakeGame:
         pygame.display.set_caption('Snake Game')
         self.display  = pygame.display.set_mode((window_x, window_y))
         self.clock = pygame.time.Clock()
-        
         self.reset()
 
     def __place_food(self):
         self.food = Point(random.randrange(1, (window_x//10)) * BLOCK_SIZE,
                           random.randrange(1, (window_y//10)) * BLOCK_SIZE)        
         if(self.food in self.body):
-            self._place__food()      
-
+            self.__place_food()      
 
     def reset (self):
         self.direction = Direction.RIGHT
@@ -70,13 +68,13 @@ class SnakeGame:
                 pygame.quit()
                 quit()
             if(event.type == pygame.KEYDOWN):
-                if(event.key == pygame.K_LEFT):
+                if(event.key == pygame.K_LEFT and self.direction != Direction.RIGHT):
                     self.direction = Direction.LEFT
-                elif(event.key == pygame.K_RIGHT):
+                elif(event.key == pygame.K_RIGHT and self.direction != Direction.LEFT):
                     self.direction = Direction.RIGHT
-                elif(event.key == pygame.K_UP):
+                elif(event.key == pygame.K_UP and self.direction != Direction.DOWN):
                     self.direction = Direction.UP
-                elif(event.key == pygame.K_DOWN):
+                elif(event.key == pygame.K_DOWN and self.direction != Direction.UP):
                     self.direction = Direction.DOWN
 
     def play_step(self,direction = None):
@@ -117,26 +115,35 @@ class SnakeGame:
         text = font.render("Score: "+str(self.score),True,white)
         self.display.blit(text,[0,0])
         pygame.display.flip()
-
-    def _move(self,action):
+    
+    def _move(self, action):
         x = self.head.x
         y = self.head.y
-        if(self.direction == Direction.RIGHT):
-            x+=BLOCK_SIZE
-        elif(self.direction == Direction.LEFT):
-            x-=BLOCK_SIZE
-        elif(self.direction == Direction.DOWN):
-            y+=BLOCK_SIZE
-        elif(self.direction == Direction.UP):
-            y-=BLOCK_SIZE
-        self.head = Point(x,y)
+
+        if action == Direction.RIGHT:
+            print("moved right")
+            x += BLOCK_SIZE
+        elif action == Direction.LEFT:
+            print("moved left")
+            x -= BLOCK_SIZE
+        elif action == Direction.DOWN:
+            print("moved down")
+            y += BLOCK_SIZE
+        elif action == Direction.UP:
+            print("moved up")
+            y -= BLOCK_SIZE
+        
+        self.head = Point(x, y)
+
         
     def is_collision(self, pt=None):
         if(pt is None):
             pt = self.head
             
         if(pt.x>self.w-BLOCK_SIZE or pt.x<0 or pt.y>self.h - BLOCK_SIZE or pt.y<0):
+            print("chocaste bro")
             return True
         if(pt in self.body[1:]):
+            print("chocaste bro")
             return True
         return False
