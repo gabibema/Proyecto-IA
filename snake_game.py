@@ -121,29 +121,22 @@ class SnakeGame:
         y = self.head.y
 
         if action == Direction.RIGHT:
-            print("moved right")
             x += BLOCK_SIZE
         elif action == Direction.LEFT:
-            print("moved left")
             x -= BLOCK_SIZE
         elif action == Direction.DOWN:
-            print("moved down")
             y += BLOCK_SIZE
         elif action == Direction.UP:
-            print("moved up")
             y -= BLOCK_SIZE
         
         self.head = Point(x, y)
 
-        
     def is_collision(self, pt=None):
         if(pt is None):
             pt = self.head
             
         if(pt.x>self.w-BLOCK_SIZE or pt.x<0 or pt.y>self.h - BLOCK_SIZE or pt.y<0):
-            print("chocaste bro")
             return True
         if(pt in self.body[1:]):
-            print("chocaste bro")
             return True
         return False
