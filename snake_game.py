@@ -43,6 +43,8 @@ class SnakeGame:
         pygame.display.set_caption('Snake Game')
         self.display  = pygame.display.set_mode((window_x, window_y))
         self.clock = pygame.time.Clock()
+        self.start_time = pygame.time.get_ticks()
+        self.direction_changes = []
         self.reset()
 
     def __place_food(self):
@@ -121,12 +123,24 @@ class SnakeGame:
         y = self.head.y
 
         if action == Direction.RIGHT:
+            if len(self.direction_changes) >= 40:
+                self.direction_changes.pop(0)
+            self.direction_changes.append(Direction.RIGHT.value)
             x += BLOCK_SIZE
         elif action == Direction.LEFT:
+            if len(self.direction_changes) >= 40:
+                self.direction_changes.pop(0)
+            self.direction_changes.append(Direction.LEFT.value)
             x -= BLOCK_SIZE
         elif action == Direction.DOWN:
+            if len(self.direction_changes) >= 40:
+                self.direction_changes.pop(0)
+            self.direction_changes.append(Direction.DOWN.value)
             y += BLOCK_SIZE
         elif action == Direction.UP:
+            if len(self.direction_changes) >= 40:
+                self.direction_changes.pop(0)
+            self.direction_changes.append(Direction.UP.value)
             y -= BLOCK_SIZE
         
         self.head = Point(x, y)
