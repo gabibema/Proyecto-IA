@@ -12,8 +12,8 @@ snake_speed = 15
 BLOCK_SIZE = 10
  
 # Window size
-window_x = 720
-window_y = 480
+window_x = 360
+window_y = 360
  
 # defining colors
 black = pygame.Color(0, 0, 0)
@@ -38,8 +38,8 @@ pygame.init()
 
 class SnakeGame:
     def __init__(self):
-        self.w = 720
-        self.h = 480
+        self.w = 360
+        self.h = 360
         pygame.display.set_caption('Snake Game')
         self.display  = pygame.display.set_mode((window_x, window_y))
         self.clock = pygame.time.Clock()
