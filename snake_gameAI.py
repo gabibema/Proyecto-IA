@@ -18,6 +18,16 @@ def moving_towards_food(head_x, head_y, food_x, food_y, direction):
     elif direction == Direction.RIGHT:
         return head_x < food_x
 
+def one_hot_direction(direction):
+    if direction == Direction.UP:
+        return 3 
+    elif direction == Direction.DOWN:
+        return 4
+    elif direction == Direction.LEFT:
+        return 2
+    elif direction == Direction.RIGHT:
+        return 1
+
 def play_game(network):
     game = SnakeGame()
     ai_score = 0
@@ -31,11 +41,12 @@ def play_game(network):
         food_x, food_y = game.food
         body = game.body
         duration = game_duration(game.start_time)
+        direction = one_hot_direction(game.direction)
         is_approaching_food = moving_towards_food(head_x, head_y, food_x, food_y, game.direction)
         distance = distance_to_food(head_x, head_y, food_x, food_y)
         
         # add observed state
-        state = [head_x, head_y, food_x, food_y, distance, is_approaching_food]
+        state = [head_x, head_y, food_x, food_y, direction, distance, is_approaching_food]
         for segment in body:
             state += [segment[0], segment[1]]
 
@@ -59,37 +70,7 @@ def play_game(network):
         elif action == 3:
             game.direction = Direction.RIGHT
 
-        # Take the action and get the new state and score
-        old_score = game.score
-        game.play_step()
-        if game.score > old_score:
-            ai_score += 1000
-        else:
-            ai_score -= 1
-            
-        # Check if the snake is closer than before
-        if last_distance_to_food is not None:
-            if distance < last_distance_to_food:
-                ai_score += 10 * (last_distance_to_food - distance)
-            else: # moving away from the food
-                ai_score -= 10 * (last_distance_to_food - distance)
-        last_distance_to_food = distance
-        
-        if game.direction != last_direction:
-            ai_score += 20
-        last_direction = game.direction
-        
-        # Check if the direction is moving is the one were food is
-        if is_approaching_food:
-            if not was_approaching_food:
-                ai_score += 100
-            else: # was already approaching food
-                ai_score += 10
-        else: # is not approaching food
-            if not was_approaching_food:
-                ai_score -= 200
-            else: # was approaching_food
-                ai_score -= 20
-        was_approaching_food = is_approaching_food
+        ai_score = int((game.score + 1) * (duration ** 2.1) + (game.score ^ 2))
+
         
     return ai_score 
