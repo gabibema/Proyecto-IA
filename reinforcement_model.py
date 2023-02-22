@@ -23,3 +23,11 @@ class QTrainer:
         self.optimer = optim.Adam(model.parameters(),lr = self.lr)    
         self.criterion = nn.MSELoss()
 
+    def train_step(self,state,action,reward,next_state,done):
+        state = torch.tensor(state,dtype=torch.float).cuda()
+        next_state = torch.tensor(next_state,dtype=torch.float).cuda()
+        action = torch.tensor(action,dtype=torch.long).cuda()
+        reward = torch.tensor(reward,dtype=torch.float).cuda()
+
+        prediction = self.model(state).cuda()
+        target = prediction.clone().cuda()
