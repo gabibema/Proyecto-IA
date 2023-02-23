@@ -7,7 +7,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from snake_game import BLOCK_SIZE, SnakeGame, Point, DirectionBATCH_SIZE = 1000
+from snake_game import BLOCK_SIZE, SnakeGame, Point, Direction
+BATCH_SIZE = 1000
 LR = 0.001
 
 
@@ -64,30 +65,31 @@ class Agent:
         dir_u = game.direction == Direction.UP
         dir_d = game.direction == Direction.DOWN
 
-            olisión            (dir_u and game.is_collision(point_u))or
-            (dir_d and game.is_collision(point_d))or
-            (dir_l and game.is_collision(point_l))or
-            (dir_r and game.is_collision(point_r)),
-                        (dir_u and game.is_collision(point_r))or
-            (dir_d and game.is_collision(point_l))or
-            (dir_u and game.is_collision(point_u))or
-            (dir_d and game.is_collision(point_d)),
+        state = [
+        (dir_u and game.is_collision(point_u))or
+        (dir_d and game.is_collision(point_d))or
+        (dir_l and game.is_collision(point_l))or
+        (dir_r and game.is_collision(point_r)),
+            
+        (dir_u and game.is_collision(point_r))or
+        (dir_d and game.is_collision(point_l))or
+        (dir_u and game.is_collision(point_u))or
+        (dir_d and game.is_collision(point_d)),
 
-                        (dir_u and game.is_collision(point_r))or
-            (dir_d and game.is_collision(point_l))or
-            (dir_r and game.is_collision(point_u))or
-            (dir_l and game.is_collision(point_d)),
+        (dir_u and game.is_collision(point_r))or
+        (dir_d and game.is_collision(point_l))or
+        (dir_r and game.is_collision(point_u))or
+        (dir_l and game.is_collision(point_d)),
 
 
-            dir_l,
-            dir_r,
-            dir_u,
-            dir_d,
+        dir_l,
+        dir_r,
+        dir_u,
+        dir_d,
 
-            game.food.x < game.head.x, 
-            game.food.x > game.head.x,
-            game.food.y < game.head.y, 
-            game.food.y > game.head.y
-        ]
-al_move[move]=1 
-        return 
+        game.food.x < game.head.x, 
+        game.food.x > game.head.x,
+        game.food.y < game.head.y, 
+        game.food.y > game.head.y] 
+        
+        return np.array(state,dtype=int)
