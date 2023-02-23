@@ -1,3 +1,5 @@
+import sys
+sys.path.append("../Proyecto-IA")
 from snake_game import SnakeGame, Direction
 import pygame
 import math
