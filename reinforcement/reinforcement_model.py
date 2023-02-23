@@ -8,7 +8,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from snake_game import BLOCK_SIZE, SnakeGame, Point, Direction
-BATCH_SIZE = 1000
+
+MAX_EPSILON = 80
+MAX_MEMORY = 1024
 LR = 0.001
 
 class Linear_QNet(nn.Module):
@@ -109,12 +111,27 @@ class Agent:
         self.memory.append((state,action,reward,next_state,done)) 
 
     def train_long_memory(self):
-        if (len(self.memory) > BATCH_SIZE):
-            mini_sample = random.sample(self.memory,BATCH_SIZE)
+        if (len(self.memory) > MAX_MEMORY):
+            mini_sample = random.sample(self.memory,MAX_MEMORY)
         else:
             mini_sample = self.memory
         states,actions,rewards,next_states,dones = zip(*mini_sample)
         self.trainer.train_step(states,actions,rewards,next_states,dones)
-
+    
     def train_short_memory(self,state,action,reward,next_state,done):
         self.trainer.train_step(state,action,reward,next_state,done)
+
+
+    def get_action(self,state):
+        self.epsilon = MAX_EPSILON - self.n_game
+        final_move = [0,0,0]
+
+        if(random.randint(0,200)<self.epsilon):
+            move = random.randint(0,2)
+            final_move[move]=1
+        else:
+            state = torch.tensor(state,dtype=torch.float).cuda()
+            prediction = self.model(state).cuda()
+            move = torch.argmax(prediction).item()
+            final_move[move]=1 
+        return final_move
