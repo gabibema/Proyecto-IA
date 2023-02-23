@@ -1,6 +1,6 @@
 import neat
 import pickle
-import snake_gameAI
+import snake_gameAI as snake_gameAI
 
 # Define the fitness function
 def evaluate_genomes(genomes, config):
