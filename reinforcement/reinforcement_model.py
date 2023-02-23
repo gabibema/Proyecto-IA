@@ -11,7 +11,6 @@ from snake_game import BLOCK_SIZE, SnakeGame, Point, Direction
 BATCH_SIZE = 1000
 LR = 0.001
 
-
 class Linear_QNet(nn.Module):
     def __init__(self,input_size,hidden_size,output_size):
         super().__init__()
@@ -26,7 +25,7 @@ class Linear_QNet(nn.Module):
     
 
 class QTrainer:
-     def __init__(self,model,lr,gamma):
+    def __init__(self,model,lr,gamma):
         self.lr = lr
         self.gamma = gamma
         self.model = model
@@ -42,6 +41,17 @@ class QTrainer:
         prediction = self.model(state).cuda()
         target = prediction.clone().cuda()
 
+        for i in range(len(done)):
+            Q_new = reward[i]
+            if not done[i]:
+                Q_new = reward[i] + self.gamma * torch.max(self.model(next_state[i])).cuda()
+            target[i][torch.argmax(action).item()] = Q_new 
+
+        self.optimer.zero_grad()
+        loss = self.criterion(target,prediction)
+        loss.backward()
+
+        self.optimer.step()
 
 class Agent:
     def __init__(self):
@@ -54,7 +64,7 @@ class Agent:
 
 
     def get_state(self,game):
-        head = game.snake[0]
+        head = game.head
         point_l=Point(head.x - BLOCK_SIZE, head.y)
         point_r=Point(head.x + BLOCK_SIZE, head.y)
         point_u=Point(head.x, head.y - BLOCK_SIZE)
@@ -66,30 +76,31 @@ class Agent:
         dir_d = game.direction == Direction.DOWN
 
         state = [
-        (dir_u and game.is_collision(point_u))or
-        (dir_d and game.is_collision(point_d))or
-        (dir_l and game.is_collision(point_l))or
-        (dir_r and game.is_collision(point_r)),
-            
-        (dir_u and game.is_collision(point_r))or
-        (dir_d and game.is_collision(point_l))or
-        (dir_u and game.is_collision(point_u))or
-        (dir_d and game.is_collision(point_d)),
+            (dir_u and game.is_collision(point_u))or
+            (dir_d and game.is_collision(point_d))or
+            (dir_l and game.is_collision(point_l))or
+            (dir_r and game.is_collision(point_r)),
+                
+            (dir_u and game.is_collision(point_r))or
+            (dir_d and game.is_collision(point_l))or
+            (dir_u and game.is_collision(point_u))or
+            (dir_d and game.is_collision(point_d)),
 
-        (dir_u and game.is_collision(point_r))or
-        (dir_d and game.is_collision(point_l))or
-        (dir_r and game.is_collision(point_u))or
-        (dir_l and game.is_collision(point_d)),
+            (dir_u and game.is_collision(point_r))or
+            (dir_d and game.is_collision(point_l))or
+            (dir_r and game.is_collision(point_u))or
+            (dir_l and game.is_collision(point_d)),
 
 
-        dir_l,
-        dir_r,
-        dir_u,
-        dir_d,
+            dir_l,
+            dir_r,
+            dir_u,
+            dir_d,
 
-        game.food.x < game.head.x, 
-        game.food.x > game.head.x,
-        game.food.y < game.head.y, 
-        game.food.y > game.head.y] 
+            game.food.x < game.head.x, 
+            game.food.x > game.head.x,
+            game.food.y < game.head.y, 
+            game.food.y > game.head.y
+        ] 
         
         return np.array(state,dtype=int)
