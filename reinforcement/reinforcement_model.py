@@ -10,7 +10,7 @@ import torch.optim as optim
 from snake_game import BLOCK_SIZE, SnakeGame, Point, Direction
 
 MAX_EPSILON = 80
-MAX_MEMORY = 1024
+MAX_MEMORY = 32
 LR = 0.001
 
 class Linear_QNet(nn.Module):
@@ -39,6 +39,13 @@ class QTrainer:
         next_state = torch.tensor(next_state,dtype=torch.float).cuda()
         action = torch.tensor(action,dtype=torch.long).cuda()
         reward = torch.tensor(reward,dtype=torch.float).cuda()
+
+        if(len(state.shape) == 1): 
+            state = torch.unsqueeze(state,0).cuda()
+            next_state = torch.unsqueeze(next_state,0).cuda()
+            action = torch.unsqueeze(action,0).cuda()
+            reward = torch.unsqueeze(reward,0).cuda()
+            done = (done, )
 
         prediction = self.model(state).cuda()
         target = prediction.clone().cuda()
