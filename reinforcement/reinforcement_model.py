@@ -25,6 +25,9 @@ class Linear_QNet(nn.Module):
         x = self.linear2(x)
         return x
     
+    def save(self, file_name='reinforcement/r_model.pt'):
+        torch.save(self.state_dict(),file_name)
+    
 
 class QTrainer:
     def __init__(self,model,lr,gamma):
@@ -61,6 +64,8 @@ class QTrainer:
         loss.backward()
 
         self.optimer.step()
+
+
 
 class Agent:
     def __init__(self):

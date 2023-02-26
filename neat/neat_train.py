@@ -1,3 +1,4 @@
+import os
 import sys
 sys.path.append("../Proyecto-IA")
 
@@ -18,6 +19,7 @@ def evaluate_genomes(genomes, config):
 
         # Penalize the genome if it repeatedly moves in the same direction
         genome.fitness = score 
+        #os.system('cls||clear')
         #print("fitness score: ", genome.fitness)
 
 # Set up the NEAT algorithm configuration
@@ -26,6 +28,11 @@ config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction, neat.D
 
 # Create a population and run the NEAT algorithm to evolve the population
 pop = neat.population.Population(config)
+
+# Restore the population from the last checkpoint
+#checkpoint = neat.Checkpointer.restore_checkpoint('./neat/config/NeatCheckpoints/snake-checkpoint-23')
+#pop = checkpoint
+
 pop.add_reporter(neat.StdOutReporter(True))
 stats = neat.statistics.StatisticsReporter()
 pop.add_reporter(stats)

@@ -8,12 +8,8 @@ from collections import namedtuple
 pygame.init()
 font = pygame.font.Font(None,25) 
  
-snake_speed = 15
-BLOCK_SIZE = 10
- 
-# Window size
-window_x = 360
-window_y = 360
+SPEED = 40
+BLOCK_SIZE = 20
  
 # defining colors
 black = pygame.Color(0, 0, 0)
@@ -28,7 +24,6 @@ class Direction(Enum):
     UP = 3
     DOWN = 4
     
-SPEED = 15
 Point = namedtuple('Point','x , y')
 
 # Initialising pygame
@@ -38,26 +33,28 @@ pygame.init()
 
 class SnakeGame:
     def __init__(self):
-        self.w = 360
-        self.h = 360
+        self.w = 640
+        self.h = 480
         pygame.display.set_caption('Snake Game')
-        self.display  = pygame.display.set_mode((window_x, window_y))
+        self.display  = pygame.display.set_mode((self.w, self.h)) 
         self.clock = pygame.time.Clock()
         self.start_time = pygame.time.get_ticks()
-        self.direction_changes = []
         self.reset()
 
     def __place_food(self):
-        self.food = Point(random.randrange(1, (window_x//10)) * BLOCK_SIZE,
-                          random.randrange(1, (window_y//10)) * BLOCK_SIZE)        
+
+        x = random.randint(0,(self.w-BLOCK_SIZE)//BLOCK_SIZE)*BLOCK_SIZE
+        y = random.randint(0,(self.h-BLOCK_SIZE)//BLOCK_SIZE)*BLOCK_SIZE
+        self.food = Point(x,y)        
         if(self.food in self.body):
             self.__place_food()      
 
     def reset (self):
         self.direction = Direction.RIGHT
-        self.head = Point(100,50)
-        self.body = [self.head, Point(90, 50),
-                     Point(80, 50)]
+        self.head = Point(self.w/2,self.h/2)
+        self.body = [self.head,
+                    Point(self.head.x-BLOCK_SIZE,self.head.y),
+                    Point(self.head.x-(2*BLOCK_SIZE),self.head.y)]
         self.score = 0
         self.food = None
         self.__place_food()
@@ -78,12 +75,29 @@ class SnakeGame:
                     self.direction = Direction.UP
                 elif(event.key == pygame.K_DOWN and self.direction != Direction.UP):
                     self.direction = Direction.DOWN
+                    
+    def __get_direction_from_action(self,action):
+        clock_wise = [Direction.RIGHT,Direction.DOWN,Direction.LEFT,Direction.UP]
+        idx = clock_wise.index(self.direction)
+        if np.array_equal(action,[1,0,0]):
+            new_dir = clock_wise[idx]
+        elif np.array_equal(action,[0,1,0]):
+            next_idx = (idx + 1) % 4
+            new_dir = clock_wise[next_idx] # right Turn
+        else:
+            next_idx = (idx - 1) % 4
+            new_dir = clock_wise[next_idx] # Left Turn
+        
+        self.direction = new_dir
 
-    def play_step(self,direction = None):
+
+    def play_step(self,action = None):
         self.frame_iteration+=1
-
-        if(direction == None):
+        if(action == None):
             self.__get_move()
+        else:
+            self.__get_direction_from_action(action)
+
         self._move(self.direction)
         self.body.insert(0,self.head)
     
@@ -123,24 +137,12 @@ class SnakeGame:
         y = self.head.y
 
         if action == Direction.RIGHT:
-            if len(self.direction_changes) >= 40:
-                self.direction_changes.pop(0)
-            self.direction_changes.append(Direction.RIGHT.value)
             x += BLOCK_SIZE
         elif action == Direction.LEFT:
-            if len(self.direction_changes) >= 40:
-                self.direction_changes.pop(0)
-            self.direction_changes.append(Direction.LEFT.value)
             x -= BLOCK_SIZE
         elif action == Direction.DOWN:
-            if len(self.direction_changes) >= 40:
-                self.direction_changes.pop(0)
-            self.direction_changes.append(Direction.DOWN.value)
             y += BLOCK_SIZE
         elif action == Direction.UP:
-            if len(self.direction_changes) >= 40:
-                self.direction_changes.pop(0)
-            self.direction_changes.append(Direction.UP.value)
             y -= BLOCK_SIZE
         
         self.head = Point(x, y)

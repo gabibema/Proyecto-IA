@@ -27,10 +27,10 @@ def train():
             agent.train_long_memory()
             if(score > reward): 
                 reward = score
+                agent.model.save()
             print('Game:',agent.n_game,'Score:',score,'Record:',record)
             
             total_score+=score
-            mean_score = total_score / agent.n_game
 
 
 train()
