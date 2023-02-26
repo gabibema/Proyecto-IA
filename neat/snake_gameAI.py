@@ -64,25 +64,6 @@ def is_food(head, food):
             
     return (is_food_up, is_food_right, is_food_down, is_food_left)
 
-def eval_collision(head, direction):
-    head_x, head_y = head
-    
-    will_collide_up = 0
-    will_collide_right = 0
-    will_collide_down = 0
-    will_collide_left = 0
-    
-    if (head_x <= 10 and direction == Direction.LEFT):
-        will_collide_left = 1
-    if (head_x >= 350 and direction == Direction.RIGHT):
-        will_collide_right = 1
-    if (head_y <= 10 and direction == Direction.UP):
-        will_collide_up = 1
-    if (head_y >= 350 and direction == Direction.DOWN):
-        will_collide_down = 1
-    
-    return (will_collide_up, will_collide_right, will_collide_down, will_collide_left)
-
 def corner_distances(head):
     head_x, head_y = head
     
