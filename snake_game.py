@@ -76,6 +76,55 @@ class SnakeGame:
                 elif(event.key == pygame.K_DOWN and self.direction != Direction.UP):
                     self.direction = Direction.DOWN
                     
+    def get_state(self):
+        head = self.head
+        point_l=Point(head.x - BLOCK_SIZE, head.y)
+        point_r=Point(head.x + BLOCK_SIZE, head.y)
+        point_u=Point(head.x, head.y - BLOCK_SIZE)
+        point_d=Point(head.x, head.y + BLOCK_SIZE)
+
+        dir_l = self.direction == Direction.LEFT
+        dir_r = self.direction == Direction.RIGHT
+        dir_u = self.direction == Direction.UP
+        dir_d = self.direction == Direction.DOWN
+
+        state = [
+            (dir_u and self.is_collision(point_u))or
+            (dir_d and self.is_collision(point_d))or
+            (dir_l and self.is_collision(point_l))or
+            (dir_r and self.is_collision(point_r)),
+                
+            (dir_u and self.is_collision(point_r))or
+            (dir_d and self.is_collision(point_l))or
+            (dir_u and self.is_collision(point_u))or
+            (dir_d and self.is_collision(point_d)),
+
+            (dir_u and self.is_collision(point_r))or
+            (dir_d and self.is_collision(point_l))or
+            (dir_r and self.is_collision(point_u))or
+            (dir_l and self.is_collision(point_d)),
+
+
+            dir_l,
+            dir_r,
+            dir_u,
+            dir_d,
+
+            self.food.x < self.head.x, 
+            self.food.x > self.head.x,
+            self.food.y < self.head.y, 
+            self.food.y > self.head.y
+        ] 
+        
+        return np.array(state,dtype=int)
+    
+    
+    def check_quit(self):
+        for event in pygame.event.get():
+            if(event.type == pygame.QUIT):
+                pygame.quit()
+                quit()
+        
     def __get_direction_from_action(self,action):
         clock_wise = [Direction.RIGHT,Direction.DOWN,Direction.LEFT,Direction.UP]
         idx = clock_wise.index(self.direction)
@@ -88,6 +137,7 @@ class SnakeGame:
             next_idx = (idx - 1) % 4
             new_dir = clock_wise[next_idx] # Left Turn
         
+        self.check_quit()
         self.direction = new_dir
 
 

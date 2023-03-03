@@ -10,7 +10,7 @@ import torch.optim as optim
 from snake_game import BLOCK_SIZE, SnakeGame, Point, Direction
 
 MAX_EPSILON = 80
-MAX_MEMORY = 32
+MAX_MEMORY = 10000
 LR = 0.001
 
 class Linear_QNet(nn.Module):

@@ -28,6 +28,8 @@ def train():
             if(score > reward): 
                 reward = score
                 agent.model.save()
+            if(score > record):
+                record = score
             print('Game:',agent.n_game,'Score:',score,'Record:',record)
             
             total_score+=score
