@@ -3,10 +3,14 @@ sys.path.append("../Proyecto-IA")
 
 from reinforcement_model import Agent
 from snake_game import SnakeGame
+from reinforcement_plot import plot
+
+mean_scores = []
+scores = []
 
 def train():
     total_score = 0
-    record = 0
+    best_score = 0
     agent = Agent()
     game = SnakeGame()
     
@@ -28,11 +32,15 @@ def train():
             if(score > reward): 
                 reward = score
                 agent.model.save()
-            if(score > record):
-                record = score
-            print('Game:',agent.n_game,'Score:',score,'Record:',record)
+            if(score > best_score):
+                best_score = score
+            print('Game:',agent.n_game,'Score:',score,'Best Score:',best_score)
             
+            scores.append(score)
             total_score+=score
+            mean_score = total_score / agent.n_game
+            mean_scores.append(mean_score)
+            plot(scores,mean_scores,best_score)
 
 
 train()

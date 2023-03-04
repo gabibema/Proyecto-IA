@@ -132,7 +132,7 @@ def play_game(network):
         game.play_step()
         
         if game.score > prev_game_score:
-            ai_score += 500    
+            ai_score += 500 * game.score   
         prev_game_score = game.score
         
         if food_distance < prev_food_distance:

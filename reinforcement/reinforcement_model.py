@@ -145,5 +145,5 @@ class Agent:
             state = torch.tensor(state,dtype=torch.float).cuda()
             prediction = self.model(state).cuda()
             move = torch.argmax(prediction).item()
-            final_move[move]=1 
+            final_move[move]=1
         return final_move

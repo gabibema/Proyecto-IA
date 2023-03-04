@@ -8,7 +8,7 @@ from collections import namedtuple
 pygame.init()
 font = pygame.font.Font(None,25) 
  
-SPEED = 40
+SPEED = 20
 BLOCK_SIZE = 20
  
 # defining colors
