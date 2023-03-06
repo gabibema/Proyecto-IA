@@ -75,6 +75,7 @@ class SnakeGame:
                     self.direction = Direction.UP
                 elif(event.key == pygame.K_DOWN and self.direction != Direction.UP):
                     self.direction = Direction.DOWN
+                return
                     
     def get_state(self):
         head = self.head
