@@ -91,8 +91,9 @@ def play_game(network):
     ai_score = 0
     prev_food_distance = math.sqrt(2*width*height)
     was_approaching_food = False
-    tries = 2
-    try_scores = [0,0]
+    tries = 5
+    try_scores = [0,0,0,0,0]
+    non_zero = 0
     
     played = 0
     while not game.game_over and played < tries:
@@ -153,10 +154,11 @@ def play_game(network):
             try_scores[played] = game.score
             prev_game_score = 0
             played += 1
+            if game.score != 0:
+                non_zero += 1
             game.reset()
     
-    if (try_scores[0] > 0 and try_scores[1] > 0):
-        print("snake ate food on all tries!")
-        ai_score = ai_score * 3
+    ai_score = ai_score * (1+non_zero)
+
     return ai_score
 

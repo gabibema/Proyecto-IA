@@ -31,19 +31,19 @@ def main():
     pop = neat.population.Population(config)
 
     # Restore the population from the last checkpoint
-    #checkpoint = neat.Checkpointer.restore_checkpoint('./neat/config/NeatCheckpoints/snake-checkpoint-23')
-    #pop = checkpoint
+    checkpoint = neat.Checkpointer.restore_checkpoint('./neat/config/NeatCheckpoints/snake-checkpoint-99')
+    pop = checkpoint
 
     pop.add_reporter(neat.StdOutReporter(True))
     pop.add_reporter(neat.statistics.StatisticsReporter())
     pop.add_reporter(neat.Checkpointer(5, filename_prefix="./neat/config/NeatCheckpoints/snake-checkpoint-"))
 
     available_cores = multiprocessing.cpu_count()
-    parallel = neat.ParallelEvaluator(available_cores, evaluate_genomes)
 
-    #winner = pop.run(evaluate_genomes)
-    max_generations = 500
-    winner = pop.run(parallel.evaluate, max_generations)
+    winner = pop.run(evaluate_genomes)
+    #parallel = neat.ParallelEvaluator(available_cores, evaluate_genomes)
+    #max_generations = 500
+    #winner = pop.run(parallel.evaluate, max_generations)
 
     # Save the best neural network to a file|
     with open("snake-best-network", "wb") as f:
