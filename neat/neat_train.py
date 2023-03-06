@@ -1,6 +1,7 @@
 import os
 import sys
 sys.path.append("../Proyecto-IA")
+import multiprocessing
 
 import neat
 import pickle
@@ -17,23 +18,36 @@ def evaluate_genomes(genomes, config):
 
         genome.fitness = fitness 
 
-# Set up the NEAT algorithm configuration
-config_path = "./neat/config/neat-config.txt"
-config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet, neat.DefaultStagnation, config_path)
+def main():
+    # Set up the NEAT algorithm configuration
+    config_path = "./neat/config/neat-config"
+    config = neat.config.Config(neat.DefaultGenome, 
+                                neat.DefaultReproduction, 
+                                neat.DefaultSpeciesSet,
+                                neat.DefaultStagnation, 
+                                config_path)
 
-# Create a population and run the NEAT algorithm to evolve the population
-pop = neat.population.Population(config)
+    # Create a population and run the NEAT algorithm to evolve the population
+    pop = neat.population.Population(config)
 
-# Restore the population from the last checkpoint
-#checkpoint = neat.Checkpointer.restore_checkpoint('./neat/config/NeatCheckpoints/snake-checkpoint-23')
-#pop = checkpoint
+    # Restore the population from the last checkpoint
+    #checkpoint = neat.Checkpointer.restore_checkpoint('./neat/config/NeatCheckpoints/snake-checkpoint-23')
+    #pop = checkpoint
 
-pop.add_reporter(neat.StdOutReporter(True))
-stats = neat.statistics.StatisticsReporter()
-pop.add_reporter(stats)
-pop.add_reporter(neat.Checkpointer(5, filename_prefix="./neat/config/NeatCheckpoints/snake-checkpoint-"))
-winner = pop.run(evaluate_genomes)
+    pop.add_reporter(neat.StdOutReporter(True))
+    pop.add_reporter(neat.statistics.StatisticsReporter())
+    pop.add_reporter(neat.Checkpointer(5, filename_prefix="./neat/config/NeatCheckpoints/snake-checkpoint-"))
 
-# Save the best neural network to a file|
-with open("snake-best-network", "wb") as f:
-    pickle.dump(winner, f)
+    available_cores = multiprocessing.cpu_count()
+    parallel = neat.ParallelEvaluator(available_cores, evaluate_genomes)
+
+    #winner = pop.run(evaluate_genomes)
+    max_generations = 500
+    winner = pop.run(parallel.evaluate, max_generations)
+
+    # Save the best neural network to a file|
+    with open("snake-best-network", "wb") as f:
+        pickle.dump(winner, f)
+
+if __name__ == "__main__":
+    main()
