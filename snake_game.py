@@ -33,8 +33,8 @@ pygame.init()
 # Initialise game window
 class SnakeGame:
     def __init__(self):
-        self.w = 640
-        self.h = 480
+        self.w = 640#*2
+        self.h = 480#*2
         pygame.display.set_caption('Snake Game')
         self.display  = pygame.display.set_mode((self.w, self.h)) 
         self.clock = pygame.time.Clock()

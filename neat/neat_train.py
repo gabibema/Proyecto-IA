@@ -56,17 +56,17 @@ def main():
     pop = neat.population.Population(config)
 
     # Restauro poblacion a partir de checkpoint
-    #checkpoint = neat.Checkpointer.restore_checkpoint('./neat/config/NeatCheckpoints/snake-checkpoint-359')
-    #pop = checkpoint
+    checkpoint = neat.Checkpointer.restore_checkpoint('./neat/config/NeatCheckpoints/snake-checkpoint-609')
+    pop = checkpoint
 
     pop.add_reporter(neat.StdOutReporter(True))
     pop.add_reporter(neat.statistics.StatisticsReporter())
     pop.add_reporter(neat.Checkpointer(10, filename_prefix="./neat/config/NeatCheckpoints/snake-checkpoint-"))
 
-    winner = pop.run(evaluate_genomes_singleThread)
+    winner = pop.run(evaluate_genomes_multiThread)
     
     # Guardo la red mejor red neuronal
-    with open("./neat/snake-best-network", "wb") as bestFile:
+    with open("./neat/snake-best-network.pt", "wb") as bestFile:
         pickle.dump(winner, bestFile)
 
 if __name__ == "__main__":
