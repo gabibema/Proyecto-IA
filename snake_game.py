@@ -1,4 +1,5 @@
-# importing libraries
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame
 import time
 import random
@@ -8,7 +9,7 @@ from collections import namedtuple
 pygame.init()
 font = pygame.font.Font(None,25) 
  
-SPEED = 20
+SPEED = 40
 BLOCK_SIZE = 20
  
 # defining colors
@@ -30,7 +31,6 @@ Point = namedtuple('Point','x , y')
 pygame.init()
  
 # Initialise game window
-
 class SnakeGame:
     def __init__(self):
         self.w = 640
@@ -114,18 +114,17 @@ class SnakeGame:
             self.food.x < self.head.x, 
             self.food.x > self.head.x,
             self.food.y < self.head.y, 
-            self.food.y > self.head.y
+            self.food.y > self.head.y,
         ] 
         
         return np.array(state,dtype=int)
-    
     
     def check_quit(self):
         for event in pygame.event.get():
             if(event.type == pygame.QUIT):
                 pygame.quit()
                 quit()
-        
+            
     def __get_direction_from_action(self,action):
         clock_wise = [Direction.RIGHT,Direction.DOWN,Direction.LEFT,Direction.UP]
         idx = clock_wise.index(self.direction)
@@ -140,7 +139,6 @@ class SnakeGame:
         
         self.check_quit()
         self.direction = new_dir
-
 
     def play_step(self,action = None):
         self.frame_iteration+=1
@@ -160,13 +158,13 @@ class SnakeGame:
             reward = -10
             return reward,self.game_over,self.score
             
-        if(self.head == self.food):
+        elif(self.head == self.food):
             self.score+=1
             reward=10
             self.__place_food()
-
         else:
             self.body.pop()
+
         
         self.__update_ui()
         self.clock.tick(SPEED)

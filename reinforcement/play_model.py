@@ -5,7 +5,7 @@ from snake_game import SnakeGame, Direction
 
 
 model = reinforcement_model.Linear_QNet(11,256,3)
-model.load_state_dict(torch.load("reinforcement\modelT.pt"))
+model.load_state_dict(torch.load("reinforcement\modelTT.pt"))
 
 font = pygame.font.Font(None,25) 
 game = SnakeGame()

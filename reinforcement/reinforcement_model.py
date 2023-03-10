@@ -25,7 +25,7 @@ class Linear_QNet(nn.Module):
         x = self.linear2(x)
         return x
     
-    def save(self, file_name='reinforcement/r_model.pt'):
+    def save(self, file_name='reinforcement/model.pt'):
         torch.save(self.state_dict(),file_name)
     
 
@@ -76,49 +76,6 @@ class Agent:
         self.model = Linear_QNet(11,256,3) 
         self.trainer = QTrainer(self.model,lr=LR,gamma=self.gamma)
 
-
-    def get_state(self,game):
-        head = game.head
-        point_l=Point(head.x - BLOCK_SIZE, head.y)
-        point_r=Point(head.x + BLOCK_SIZE, head.y)
-        point_u=Point(head.x, head.y - BLOCK_SIZE)
-        point_d=Point(head.x, head.y + BLOCK_SIZE)
-
-        dir_l = game.direction == Direction.LEFT
-        dir_r = game.direction == Direction.RIGHT
-        dir_u = game.direction == Direction.UP
-        dir_d = game.direction == Direction.DOWN
-
-        state = [
-            (dir_u and game.is_collision(point_u))or
-            (dir_d and game.is_collision(point_d))or
-            (dir_l and game.is_collision(point_l))or
-            (dir_r and game.is_collision(point_r)),
-                
-            (dir_u and game.is_collision(point_r))or
-            (dir_d and game.is_collision(point_l))or
-            (dir_u and game.is_collision(point_u))or
-            (dir_d and game.is_collision(point_d)),
-
-            (dir_u and game.is_collision(point_r))or
-            (dir_d and game.is_collision(point_l))or
-            (dir_r and game.is_collision(point_u))or
-            (dir_l and game.is_collision(point_d)),
-
-
-            dir_l,
-            dir_r,
-            dir_u,
-            dir_d,
-
-            game.food.x < game.head.x, 
-            game.food.x > game.head.x,
-            game.food.y < game.head.y, 
-            game.food.y > game.head.y
-        ] 
-        
-        return np.array(state,dtype=int)
-    
     def remember(self,state,action,reward,next_state,done):
         self.memory.append((state,action,reward,next_state,done)) 
 

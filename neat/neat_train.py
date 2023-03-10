@@ -7,19 +7,44 @@ import neat
 import pickle
 import snake_gameAI as snake_gameAI
 
-def evaluate_genomes(genomes, config):
+def evaluate_genomes_singleThread(genomes, config):
     print("evaluating genomes")
+    best_score = 0
     for genome_id, genome in genomes:
-        # Create a neural network from the genome
+        # Creo red neuronal para el genoma
         net = neat.nn.FeedForwardNetwork.create(genome, config)
 
-        # Play the game with the neural network
-        fitness = snake_gameAI.play_game(net)
-
+        # Juego con la red neuronal creada
+        fitness, score = snake_gameAI.play_game(net)
+        if score > best_score:
+            best_score = score
         genome.fitness = fitness 
+    print("best score: ", best_score)
+
+def evaluate_genome(genome, config):
+    net = neat.nn.FeedForwardNetwork.create(genome, config)
+    fitness, score = snake_gameAI.play_game(net)
+    genome.fitness = fitness
+    return fitness, score
+
+def evaluate_genomes_multiThread(genomes, config):
+    print("evaluating genomes")
+    best_score = 0
+    pool = multiprocessing.Pool(processes=48)
+    results = [pool.apply_async(evaluate_genome, args=(genome, config)) for genome_id, genome in genomes]
+    scores = [result.get() for result in results]
+    pool.close()
+    pool.join()
+    for i, genome_score in enumerate(scores):
+        genome = genomes[i][1]
+        fitness, score = genome_score
+        if score > best_score:
+            best_score = score
+        genome.fitness = fitness
+    print("best score: ", best_score)
 
 def main():
-    # Set up the NEAT algorithm configuration
+    # Configuracion de arranque de NEAT
     config_path = "./neat/config/neat-config"
     config = neat.config.Config(neat.DefaultGenome, 
                                 neat.DefaultReproduction, 
@@ -27,27 +52,22 @@ def main():
                                 neat.DefaultStagnation, 
                                 config_path)
 
-    # Create a population and run the NEAT algorithm to evolve the population
+    # Creo poblacion a partir de la configuracion de NEAT
     pop = neat.population.Population(config)
 
-    # Restore the population from the last checkpoint
-    checkpoint = neat.Checkpointer.restore_checkpoint('./neat/config/NeatCheckpoints/snake-checkpoint-99')
-    pop = checkpoint
+    # Restauro poblacion a partir de checkpoint
+    #checkpoint = neat.Checkpointer.restore_checkpoint('./neat/config/NeatCheckpoints/snake-checkpoint-359')
+    #pop = checkpoint
 
     pop.add_reporter(neat.StdOutReporter(True))
     pop.add_reporter(neat.statistics.StatisticsReporter())
-    pop.add_reporter(neat.Checkpointer(5, filename_prefix="./neat/config/NeatCheckpoints/snake-checkpoint-"))
+    pop.add_reporter(neat.Checkpointer(10, filename_prefix="./neat/config/NeatCheckpoints/snake-checkpoint-"))
 
-    available_cores = multiprocessing.cpu_count()
-
-    winner = pop.run(evaluate_genomes)
-    #parallel = neat.ParallelEvaluator(available_cores, evaluate_genomes)
-    #max_generations = 500
-    #winner = pop.run(parallel.evaluate, max_generations)
-
-    # Save the best neural network to a file|
-    with open("snake-best-network", "wb") as f:
-        pickle.dump(winner, f)
+    winner = pop.run(evaluate_genomes_singleThread)
+    
+    # Guardo la red mejor red neuronal
+    with open("./neat/snake-best-network", "wb") as bestFile:
+        pickle.dump(winner, bestFile)
 
 if __name__ == "__main__":
     main()
